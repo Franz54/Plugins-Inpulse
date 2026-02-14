@@ -35,36 +35,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fillBtn.addEventListener('click', async () => {
-        alert("1. Bouton Remplir cliqué !");
-
         // 1. Check URL
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        alert("2. URL détectée: " + tab.url);
-
         if (!tab.url.includes("inpulse.open-groupe.com")) {
-            alert("⚠️ Attention : URL incorrecte !");
+            alert("⚠️ Attention : L'URL détectée est : " + tab.url + "\n\nL'extension est configurée pour fonctionner sur 'https://inpulse.open-groupe.com/'.");
         }
 
         const file = fileInput.files[0];
         if (!file) {
-            alert('STOP: Aucun fichier sélectionné.');
+            alert('Veuillez sélectionner un fichier Markdown.');
             return;
         }
-        alert("3. Fichier trouvé: " + file.name);
 
         const reader = new FileReader();
         reader.onload = async (e) => {
-            alert("4. Lecture du fichier terminée.");
             try {
                 const text = e.target.result;
                 const data = parseMarkdown(text);
-                alert("5. Analyse Markdown terminée (Parsing OK).");
-
-                alert("6. Envoi au Content Script...");
                 await sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
-                alert("7. Message envoyé (Fin du popup).");
             } catch (err) {
-                alert("ERREUR CRITIQUE DANS POPUP : " + err.message);
+                alert("Erreur dans popup (parsing/envoi) : " + err.message);
             }
         };
         reader.readAsText(file);

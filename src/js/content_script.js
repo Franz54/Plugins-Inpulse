@@ -74,9 +74,9 @@ async function fillMissionTab(mission) {
     }
 
     // Click "Modifier" (crayon)
-    const editBtn = document.querySelector('button svg[class*="Edit"]').parentElement;
-    if (editBtn) {
-        editBtn.click();
+    const editIcon = document.querySelector('button svg[class*="Edit"]');
+    if (editIcon && editIcon.parentElement) {
+        editIcon.parentElement.click();
         await wait(500);
 
         // Fill context and activities in modal
