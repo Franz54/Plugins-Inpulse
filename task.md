@@ -12,10 +12,10 @@
 - [x] Implement UI for file selection <!-- id: 3 -->
     - [x] Create `popup.html` with file input <!-- id: 4 -->
     - [x] Implement `popup.js` to read and parse MD file <!-- id: 15 -->
-- [/] Implement form filling logic <!-- id: 6 -->
+- [x] Implement form filling logic <!-- id: 6 -->
     - [x] Create `content_script.js` to interact with the target form <!-- id: 7 -->
     - [x] Implement communication between popup and content script <!-- id: 8 -->
-- [ ] Documentation and Delivery <!-- id: 16 -->
+- [x] Documentation and Delivery <!-- id: 16 -->
     - [x] Create `DEMARCHE.md` for RM colleague <!-- id: 17 -->
     - [x] Move test recordings to `docs/recordings/` <!-- id: 18 -->
 - [ ] Verification and Testing <!-- id: 9 -->
