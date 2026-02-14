@@ -9,9 +9,46 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } else if (request.action === 'NAVIGATE_TO_COLLAB') {
         navigateToCollab(request.collabName);
         sendResponse({ status: "ok" }); // Ack
+    } else if (request.action === 'RUN_DIAGNOSTICS') {
+        runDiagnostics();
+        sendResponse({ status: "ok" });
     }
     return true; // Keep channel open for async response if needed
 });
+
+function runDiagnostics() {
+    let report = "🔍 DIAGNOSTIC PAGE INPULSE\n\n";
+    report += "URL: " + window.location.href + "\n";
+    report += "Titre: " + document.title + "\n\n";
+
+    // 1. Scan for Buttons
+    const buttons = Array.from(document.querySelectorAll('button'));
+    report += `--- BOUTONS (${buttons.length}) ---\n`;
+    buttons.forEach((btn, i) => {
+        if (btn.innerText.trim().length > 0) {
+            report += `[${i}] Text: "${btn.innerText.trim()}" | Class: "${btn.className}"\n`;
+        }
+    });
+
+    // 2. Scan for Textareas
+    const textareas = Array.from(document.querySelectorAll('textarea'));
+    report += `\n--- TEXTAREAS (${textareas.length}) ---\n`;
+    textareas.forEach((ta, i) => {
+        const id = ta.id;
+        const label = document.querySelector(`label[for="${id}"]`);
+        report += `[${i}] ID: "${id}" | Label: "${label ? label.innerText.trim() : 'N/A'}"\n`;
+    });
+
+    // 3. Scan for Labels
+    const labels = Array.from(document.querySelectorAll('label'));
+    report += `\n--- LABELS (${labels.length}) ---\n`;
+    labels.slice(0, 10).forEach((l, i) => { // Limit to 10 to avoid spam
+        report += `[${i}] Text: "${l.innerText.trim()}" | For: "${l.getAttribute('for')}"\n`;
+    });
+
+    console.log(report);
+    alert(report);
+}
 
 async function fillInpulseForm(data) {
     console.log('Automating Inpulse Form with data:', data);

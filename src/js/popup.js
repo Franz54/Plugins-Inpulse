@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const collabInput = document.getElementById('collab-name');
     const searchBtn = document.getElementById('search-btn');
     const fillBtn = document.getElementById('fill-btn');
+    const diagBtn = document.getElementById('diag-btn');
 
     fileInput.addEventListener('change', () => {
         const file = fileInput.files[0];
@@ -32,6 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         sendMessageToContentScript(tab.id, { action: 'NAVIGATE_TO_COLLAB', collabName });
+    });
+
+    diagBtn.addEventListener('click', async () => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        sendMessageToContentScript(tab.id, { action: 'RUN_DIAGNOSTICS' });
     });
 
     fillBtn.addEventListener('click', async () => {
