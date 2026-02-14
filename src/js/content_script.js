@@ -1,7 +1,4 @@
-alert("Content Script chargé (v2 - diagnostic) !");
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    alert("Content Script a reçu le message : " + request.action);
     if (request.action === 'FILL_FORM') {
         fillInpulseForm(request.data);
         sendResponse({ status: "ok" }); // Ack
@@ -14,8 +11,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function fillInpulseForm(data) {
     console.log('Automating Inpulse Form with data:', data);
-    alert('Début du remplissage automatique...');
-    alert('Début du remplissage automatique...');
 
     // 1. Mission Tab
     if (data.mission) {
