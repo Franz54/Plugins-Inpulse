@@ -1,0 +1,22 @@
+# Task: Create CR Auto-filler Browser Extension
+
+- [/] Project setup <!-- id: 0 -->
+    - [x] Create `manifest.json` <!-- id: 1 -->
+    - [x] Analyze Markdown format (Suivi de Mission) <!-- id: 19 -->
+    - [x] Explore Inpulse UI subtleties (Missions, Goals, Strengths) <!-- id: 20 -->
+    - [ ] Setup project structure (icons, src) <!-- id: 2 -->
+- [ ] Implement Navigation Automation (Selection Page) <!-- id: 11 -->
+    - [ ] Handle search field interaction (Name/Surname) <!-- id: 12 -->
+    - [ ] Automate filter toggling ("À réaliser", "Suivi de Mission") <!-- id: 13 -->
+    - [ ] Implement row detection and click (eye icon) <!-- id: 14 -->
+- [ ] Implement UI for file selection <!-- id: 3 -->
+    - [x] Create `popup.html` with file input <!-- id: 4 -->
+    - [ ] Implement `popup.js` to read and parse MD file <!-- id: 15 -->
+- [ ] Implement form filling logic <!-- id: 6 -->
+    - [ ] Create `content_script.js` to interact with the target form <!-- id: 7 -->
+    - [ ] Implement communication between popup and content script <!-- id: 8 -->
+- [ ] Documentation and Delivery <!-- id: 16 -->
+    - [x] Create `DEMARCHE.md` for RM colleague <!-- id: 17 -->
+    - [x] Move test recordings to `docs/recordings/` <!-- id: 18 -->
+- [ ] Verification and Testing <!-- id: 9 -->
+    - [ ] Test with a dummy form <!-- id: 10 -->
