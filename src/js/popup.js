@@ -27,12 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        chrome.tabs.sendMessage(tab.id, { action: 'NAVIGATE_TO_COLLAB', collabName }, (response) => {
-            if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
-                alert("Erreur : Impossible de communiquer avec la page.\n\nVeuillez RAFRAÎCHIR la page Inpulse et réessayez.");
-            }
-        });
+        sendMessageToContentScript(tab.id, { action: 'NAVIGATE_TO_COLLAB', collabName });
     });
 
     fillBtn.addEventListener('click', async () => {
@@ -49,12 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Send data to content script
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            chrome.tabs.sendMessage(tab.id, { action: 'FILL_FORM', data }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error(chrome.runtime.lastError);
-                    alert("Erreur : Impossible de communiquer avec la page.\n\nVeuillez RAFRAICHIR la page Inpulse et reessayez.");
-                }
-            });
+            sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
         };
         reader.readAsText(file);
     });
@@ -196,4 +186,30 @@ function parseMarkdown(text) {
     if (data.mission.context) data.mission.context = data.mission.context.trim();
 
     return data;
+}
+// --- Helpers ---
+
+async function sendMessageToContentScript(tabId, message) {
+    try {
+        await chrome.tabs.sendMessage(tabId, message);
+    } catch (error) {
+        // If message fails (likely receiving end does not exist), try injecting the script
+        console.warn('Communication failed, attempting to inject content script...', error);
+        try {
+            await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: ['src/js/content_script.js']
+            });
+            // Retry sending message after injection
+            await wait(100);
+            await chrome.tabs.sendMessage(tabId, message);
+        } catch (injectionError) {
+            console.error('Script injection failed:', injectionError);
+            alert("Erreur critique : Impossible d'injecter l'extension dans cette page.\n\nAssurez-vous d'être sur une page Inpulse valide (https://inpulse.open-groupe.com/).");
+        }
+    }
+}
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
