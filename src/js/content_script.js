@@ -152,11 +152,16 @@ async function fillMissionTab(mission) {
         logs.push({ status: 'error', msg: 'Onglet "Missions/Activités actuelles" introuvable' });
     }
 
-    // Click "Modifier" (crayon)
-    const editIcon = document.querySelector('button svg[class*="Edit"]');
-    if (editIcon && editIcon.parentElement) {
-        editIcon.parentElement.click();
-        await wait(500);
+    // Click "Modifier" (crayon) - Look for pencil icon in Actions column
+    await wait(500);
+    const editBtn = Array.from(document.querySelectorAll('button')).find(btn => {
+        const svg = btn.querySelector('svg');
+        return svg && (svg.innerHTML.includes('pencil') || btn.closest('td')?.textContent.includes('Actions') || btn.getAttribute('aria-label')?.includes('Modifier'));
+    });
+
+    if (editBtn) {
+        editBtn.click();
+        await wait(800);
 
         // Fill context and activities in modal
         const contextField = findTextareaByLabel('Description du contexte');
@@ -167,8 +172,8 @@ async function fillMissionTab(mission) {
             logs.push({ status: 'error', msg: 'Champ "Description du contexte" introuvable' });
         }
 
-        // Note: activities mapping could be more specific based on MD subheaders
-        const activitiesField = findTextareaByLabel('Activités et responsabilités');
+        // Updated label text to match actual page
+        const activitiesField = findTextareaByLabel('Description des activités et responsabilités');
         if (activitiesField) {
             setInputValue(activitiesField, mission.activities || '');
             logs.push({ status: 'success', msg: 'Champ "Activités et responsabilités" rempli' });
@@ -177,9 +182,12 @@ async function fillMissionTab(mission) {
         }
 
         // Close/Validate modal
+        await wait(300);
         const validateBtn = findElementByText('button', 'Valider');
-        if (validateBtn) validateBtn.click();
-        await wait(500);
+        if (validateBtn) {
+            validateBtn.click();
+            await wait(500);
+        }
     } else {
         logs.push({ status: 'error', msg: 'Bouton "Modifier" (crayon) introuvable sur l\'onglet Mission' });
     }
@@ -198,6 +206,7 @@ async function fillSatisfactionTab(sat) {
         return logs; // Cannot proceed
     }
 
+    await wait(500);
     const bilanField = findTextareaByLabel('Bilan général');
     if (bilanField) {
         setInputValue(bilanField, sat.bilan || '');
@@ -206,7 +215,8 @@ async function fillSatisfactionTab(sat) {
         logs.push({ status: 'error', msg: 'Champ "Bilan général" introuvable' });
     }
 
-    const orgField = findTextareaByLabel('Organisation du travail');
+    // Updated label to match exact text on page
+    const orgField = findTextareaByLabel('Organisation du travail dont Télétravail');
     if (orgField) {
         setInputValue(orgField, sat.organisation || '');
         logs.push({ status: 'success', msg: 'Champ "Organisation du travail" rempli' });
