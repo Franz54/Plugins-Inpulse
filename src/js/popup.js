@@ -39,11 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const reader = new FileReader();
         reader.onload = async (e) => {
+            alert("Fichier chargé, début du parsing...");
             const text = e.target.result;
             const data = parseMarkdown(text);
+            alert("Parsing terminé. Données : " + JSON.stringify(data).substring(0, 100) + "...");
 
             // Send data to content script
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            alert("Tab ID trouvé : " + tab.id);
             sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
         };
         reader.readAsText(file);
@@ -205,7 +208,7 @@ async function sendMessageToContentScript(tabId, message) {
             await chrome.tabs.sendMessage(tabId, message);
         } catch (injectionError) {
             console.error('Script injection failed:', injectionError);
-            alert("Erreur critique : Impossible d'injecter l'extension dans cette page.\n\nAssurez-vous d'être sur une page Inpulse valide (https://inpulse.open-groupe.com/).");
+            alert("Erreur critique : Impossible d'injecter l'extension dans cette page.\n\nAssurez-vous d'être sur une page Inpulse valide (https://inpulse.open-groupe.com/). Details: " + injectionError.message);
         }
     }
 }

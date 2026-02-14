@@ -3,6 +3,7 @@ if (!window.hasInpulseContentScript) {
     window.hasInpulseContentScript = true;
 
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        alert("Content Script a reçu le message : " + request.action);
         if (request.action === 'FILL_FORM') {
             fillInpulseForm(request.data);
             sendResponse({ status: "ok" }); // Ack
@@ -16,6 +17,8 @@ if (!window.hasInpulseContentScript) {
 
 async function fillInpulseForm(data) {
     console.log('Automating Inpulse Form with data:', data);
+    alert('Début du remplissage automatique...');
+    alert('Début du remplissage automatique...');
 
     // 1. Mission Tab
     if (data.mission) {
