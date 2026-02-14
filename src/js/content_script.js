@@ -1,19 +1,15 @@
 
-if (!window.hasInpulseContentScript) {
-    window.hasInpulseContentScript = true;
-
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        alert("Content Script a reçu le message : " + request.action);
-        if (request.action === 'FILL_FORM') {
-            fillInpulseForm(request.data);
-            sendResponse({ status: "ok" }); // Ack
-        } else if (request.action === 'NAVIGATE_TO_COLLAB') {
-            navigateToCollab(request.collabName);
-            sendResponse({ status: "ok" }); // Ack
-        }
-        return true; // Keep channel open for async response if needed
-    });
-}
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    alert("Content Script a reçu le message : " + request.action);
+    if (request.action === 'FILL_FORM') {
+        fillInpulseForm(request.data);
+        sendResponse({ status: "ok" }); // Ack
+    } else if (request.action === 'NAVIGATE_TO_COLLAB') {
+        navigateToCollab(request.collabName);
+        sendResponse({ status: "ok" }); // Ack
+    }
+    return true; // Keep channel open for async response if needed
+});
 
 async function fillInpulseForm(data) {
     console.log('Automating Inpulse Form with data:', data);
