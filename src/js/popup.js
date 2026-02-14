@@ -11,9 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const text = e.target.result;
-                const data = parseMarkdown(text);
-                if (data.mission && data.mission.collabName) {
-                    collabInput.value = data.mission.collabName;
+                try {
+                    const data = parseMarkdown(text);
+                    if (data.mission && data.mission.collabName) {
+                        collabInput.value = data.mission.collabName;
+                    }
+                } catch (e) {
+                    console.error("Parsing failed on change:", e);
                 }
             };
             reader.readAsText(file);
@@ -31,29 +35,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fillBtn.addEventListener('click', async () => {
-        // alert("Bouton cliqué !");
+        alert("1. Bouton Remplir cliqué !");
 
         // 1. Check URL
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        alert("2. URL détectée: " + tab.url);
+
         if (!tab.url.includes("inpulse.open-groupe.com")) {
-            alert("⚠️ Attention : L'URL détectée est : " + tab.url + "\n\nL'extension est configurée pour fonctionner sur 'https://inpulse.open-groupe.com/'.");
+            alert("⚠️ Attention : URL incorrecte !");
         }
 
         const file = fileInput.files[0];
         if (!file) {
-            alert('Veuillez sélectionner un fichier Markdown.');
+            alert('STOP: Aucun fichier sélectionné.');
             return;
         }
+        alert("3. Fichier trouvé: " + file.name);
 
         const reader = new FileReader();
         reader.onload = async (e) => {
+            alert("4. Lecture du fichier terminée.");
             try {
-                // alert("Fichier lu, envoi au content script...");
                 const text = e.target.result;
                 const data = parseMarkdown(text);
-                sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
+                alert("5. Analyse Markdown terminée (Parsing OK).");
+
+                alert("6. Envoi au Content Script...");
+                await sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
+                alert("7. Message envoyé (Fin du popup).");
             } catch (err) {
-                alert("Erreur dans popup (parsing/envoi) : " + err.message);
+                alert("ERREUR CRITIQUE DANS POPUP : " + err.message);
             }
         };
         reader.readAsText(file);
@@ -215,7 +226,7 @@ async function sendMessageToContentScript(tabId, message) {
             await chrome.tabs.sendMessage(tabId, message);
         } catch (injectionError) {
             console.error('Script injection failed:', injectionError);
-            alert("Erreur critique : Impossible d'injecter l'extension dans cette page.\n\nAssurez-vous d'être sur une page Inpulse valide (https://inpulse.open-groupe.com/).");
+            alert("Erreur critique (Injection échouée) : " + injectionError.message);
         }
     }
 }
