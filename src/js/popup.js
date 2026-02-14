@@ -27,7 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        chrome.tabs.sendMessage(tab.id, { action: 'NAVIGATE_TO_COLLAB', collabName });
+        chrome.tabs.sendMessage(tab.id, { action: 'NAVIGATE_TO_COLLAB', collabName }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
+                alert("Erreur : Impossible de communiquer avec la page.\n\nVeuillez RAFRAÎCHIR la page Inpulse et réessayez.");
+            }
+        });
     });
 
     fillBtn.addEventListener('click', async () => {
@@ -44,7 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Send data to content script
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            chrome.tabs.sendMessage(tab.id, { action: 'FILL_FORM', data });
+            chrome.tabs.sendMessage(tab.id, { action: 'FILL_FORM', data }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError);
+                    alert("Erreur : Impossible de communiquer avec la page.\n\nVeuillez RAFRAICHIR la page Inpulse et reessayez.");
+                }
+            });
         };
         reader.readAsText(file);
     });
