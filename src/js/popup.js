@@ -31,7 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fillBtn.addEventListener('click', async () => {
-        alert("Bouton cliqué !");
+        // alert("Bouton cliqué !");
+
+        // 1. Check URL
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab.url.includes("inpulse.open-groupe.com")) {
+            alert("⚠️ Attention : L'URL détectée est : " + tab.url + "\n\nL'extension est configurée pour fonctionner sur 'https://inpulse.open-groupe.com/'.");
+        }
+
         const file = fileInput.files[0];
         if (!file) {
             alert('Veuillez sélectionner un fichier Markdown.');
@@ -41,12 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
-                // alert("Click reçu, début du traitement...");
+                // alert("Fichier lu, envoi au content script...");
                 const text = e.target.result;
                 const data = parseMarkdown(text);
-
-                // Send data to content script
-                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                 sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
             } catch (err) {
                 alert("Erreur dans popup (parsing/envoi) : " + err.message);
