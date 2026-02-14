@@ -23,9 +23,6 @@
             ],
             "js": [
                 "src/js/content_script.js"
-            ],
-            "css": [
-                "src/style/style.css"
             ]
         }
     ],

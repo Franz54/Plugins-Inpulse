@@ -6,8 +6,18 @@
 </head>
 <body>
     <h1>CR Auto-Filler</h1>
-    <input type="file" id="md-file" accept=".md">
-    <button id="fill-btn">Remplir le formulaire</button>
+    <div class="input-group">
+        <label for="md-file">Fichier Markdown :</label>
+        <input type="file" id="md-file" accept=".md">
+    </div>
+    <div class="input-group">
+        <label for="collab-name">Nom Collaborateur :</label>
+        <input type="text" id="collab-name" placeholder="ex: Karima">
+    </div>
+    <div class="button-group">
+        <button id="search-btn">🔍 Chercher</button>
+        <button id="fill-btn">✍️ Remplir</button>
+    </div>
     <script src="js/popup.js"></script>
 </body>
 </html>

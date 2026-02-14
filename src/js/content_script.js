@@ -2,6 +2,8 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'FILL_FORM') {
         fillInpulseForm(request.data);
+    } else if (request.action === 'NAVIGATE_TO_COLLAB') {
+        navigateToCollab(request.collabName);
     }
 });
 
@@ -200,6 +202,41 @@ function setInputValue(el, value) {
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
     el.blur();
+}
+
+async function navigateToCollab(collabName) {
+    console.log('Navigating to collaborator:', collabName);
+
+    // 1. Search for the name
+    const searchInput = document.querySelector('input[id^="_r_"][id$="-input-autocomplete"]');
+    if (searchInput) {
+        setInputValue(searchInput, collabName);
+        await wait(1000); // Wait for list to update
+    }
+
+    // 2. Ensure filters are set
+    const filters = ['À réaliser', 'Suivi de Mission/d\'activité'];
+    for (const filterText of filters) {
+        const labels = Array.from(document.querySelectorAll('label'));
+        const label = labels.find(l => l.textContent.includes(filterText));
+        if (label) {
+            const checkbox = label.parentElement.querySelector('input[type="checkbox"]');
+            if (checkbox && !checkbox.checked) {
+                checkbox.click();
+                await wait(500);
+            }
+        }
+    }
+
+    // 3. Find and click the collaborator row
+    const collabLink = document.querySelector(`a[aria-label*="${collabName}"]`);
+    if (collabLink) {
+        collabLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await wait(500);
+        collabLink.click();
+    } else {
+        console.warn('Collaborator link not found for:', collabName);
+    }
 }
 
 function wait(ms) {

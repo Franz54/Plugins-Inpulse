@@ -1,7 +1,34 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('md-file');
+    const collabInput = document.getElementById('collab-name');
+    const searchBtn = document.getElementById('search-btn');
     const fillBtn = document.getElementById('fill-btn');
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const data = parseMarkdown(text);
+                if (data.mission && data.mission.collabName) {
+                    collabInput.value = data.mission.collabName;
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    searchBtn.addEventListener('click', async () => {
+        const collabName = collabInput.value.trim();
+        if (!collabName) {
+            alert('Veuillez entrer le nom du collaborateur.');
+            return;
+        }
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        chrome.tabs.sendMessage(tab.id, { action: 'NAVIGATE_TO_COLLAB', collabName });
+    });
 
     fillBtn.addEventListener('click', async () => {
         const file = fileInput.files[0];
@@ -14,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = async (e) => {
             const text = e.target.result;
             const data = parseMarkdown(text);
-            
+
             // Send data to content script
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             chrome.tabs.sendMessage(tab.id, { action: 'FILL_FORM', data });
@@ -59,7 +86,7 @@ function parseMarkdown(text) {
         // --- Section 0: Formulaire Mission ---
         if (currentSection.includes('0. formulaire mission')) {
             if (line.startsWith('* **')) {
-                const match = line.match(/\*\* (.*?)\s*:\s*\*\*\s*(.*)/);
+                const match = line.match(/\*\*\s*(.*?)\s*:\s*\*\*\s*(.*)/);
                 if (match) {
                     const key = match[1].toLowerCase();
                     const value = match[2];
@@ -69,6 +96,11 @@ function parseMarkdown(text) {
             if (currentSubsection.includes('contexte mission')) {
                 if (line && !line.startsWith('#') && !line.startsWith('*')) {
                     data.mission.context = (data.mission.context || '') + line + ' ';
+                    // Heuristic: capture the first capitalized word in the context as the collabName
+                    if (!data.mission.collabName) {
+                        const wordMatch = line.match(/[A-Z][a-z]+/);
+                        if (wordMatch) data.mission.collabName = wordMatch[0];
+                    }
                 }
             }
         }
