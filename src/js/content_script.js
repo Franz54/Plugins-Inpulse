@@ -126,12 +126,24 @@ async function fillSatisfactionTab(sat) {
 }
 
 async function fillPerformanceTab(perf) {
+    let logs = [];
     const tab = findElementByText('button', 'Performance');
-    if (tab) tab.click();
-    await wait(300);
+    if (tab) {
+        tab.click();
+        await wait(300);
+        logs.push({ status: 'success', msg: 'Onglet Performance activé' });
+    } else {
+        logs.push({ status: 'error', msg: 'Onglet "Performance" introuvable' });
+        return logs;
+    }
 
     const synthField = findTextareaByLabel('Synthèse');
-    if (synthField) setInputValue(synthField, perf.synthesis || '');
+    if (synthField) {
+        setInputValue(synthField, perf.synthesis || '');
+        logs.push({ status: 'success', msg: 'Champ "Synthèse" rempli' });
+    } else {
+        logs.push({ status: 'error', msg: 'Champ "Synthèse" introuvable' });
+    }
 
     // Handle Strengths and Axes Modal
     for (const item of perf.strengthsAndAxes) {
@@ -157,17 +169,25 @@ async function fillPerformanceTab(perf) {
             const validateBtn = findElementByText('button', 'Valider');
             if (validateBtn) validateBtn.click();
             await wait(300);
+            logs.push({ status: 'success', msg: `Ajouté : ${item.type} - ${item.theme}` });
+        } else {
+            logs.push({ status: 'error', msg: 'Bouton "Ajouter un axe..." introuvable' });
         }
     }
+    return logs;
 }
 
 async function fillObjectivesTabs(objectives) {
+    let logs = [];
     // Past Objectives
     const pastTab = findElementByText('button', 'Objectifs sur la période');
     if (pastTab) {
         pastTab.click();
         await wait(500);
+        logs.push({ status: 'success', msg: 'Onglet Objectifs passés activé' });
         // Matching logic would go here: find row by objective title, click "Apprécier"
+    } else {
+        logs.push({ status: 'info', msg: 'Onglet "Objectifs sur la période" introuvable ou non requis' });
     }
 
     // Future Objectives
@@ -175,20 +195,32 @@ async function fillObjectivesTabs(objectives) {
     if (futureTab) {
         futureTab.click();
         await wait(500);
+        logs.push({ status: 'success', msg: 'Onglet Objectifs futurs activé' });
+
         for (const objTitle of objectives.future) {
             const addBtn = findElementByText('button', 'Ajouter un nouvel objectif');
             if (addBtn) {
                 addBtn.click();
                 await wait(500);
                 const titleField = findInputByLabel('Titre de l\'objectif');
-                if (titleField) setInputValue(titleField, objTitle);
+                if (titleField) {
+                    setInputValue(titleField, objTitle);
+                    logs.push({ status: 'success', msg: `Objectif ajouté : ${objTitle}` });
+                } else {
+                    logs.push({ status: 'error', msg: 'Champ "Titre de l\'objectif" introuvable' });
+                }
                 // Add more logic for date, etc.
                 const validateBtn = findElementByText('button', 'Valider');
                 if (validateBtn) validateBtn.click();
                 await wait(300);
+            } else {
+                logs.push({ status: 'error', msg: 'Bouton "Ajouter un nouvel objectif" introuvable' });
             }
         }
+    } else {
+        logs.push({ status: 'info', msg: 'Onglet "Objectifs sur la période à venir" introuvable' });
     }
+    return logs;
 }
 
 async function fillCommentsTab(comments) {
