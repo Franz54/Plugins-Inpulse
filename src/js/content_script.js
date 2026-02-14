@@ -99,22 +99,22 @@ async function fillInpulseForm(data) {
     try {
         let report = [];
 
-        // 1. Mission Tab
-        if (data.mission) {
-            report.push(...await fillMissionTab(data.mission));
-        }
-
-        // 2. Satisfaction Tab
+        // Start with the easiest: Satisfaction (no modal needed)
         if (data.satisfaction) {
             report.push(...await fillSatisfactionTab(data.satisfaction));
         }
 
-        // 3. Performance Tab (Strengths, Axes, Synthesis)
+        // 2. Performance Tab (direct fields)
         if (data.performance) {
             report.push(...await fillPerformanceTab(data.performance));
         }
 
-        // 4. Objectives Tabs (Past and Future)
+        // 3. Mission Tab (requires modal)
+        if (data.mission) {
+            report.push(...await fillMissionTab(data.mission));
+        }
+
+        // 4. Objectives Tabs (requires modals)
         if (data.objectives) {
             report.push(...await fillObjectivesTabs(data.objectives));
         }
@@ -122,6 +122,16 @@ async function fillInpulseForm(data) {
         // 5. Final Comments
         if (data.comments) {
             report.push(...await fillCommentsTab(data.comments));
+        }
+
+        // SAVE: Click the "Suivant" button to save changes
+        await wait(500);
+        const saveBtn = findElementByText('button', 'Suivant');
+        if (saveBtn) {
+            saveBtn.click();
+            report.push({ status: 'success', msg: 'Bouton "Suivant" cliqué pour sauvegarder' });
+        } else {
+            report.push({ status: 'error', msg: 'Bouton "Suivant" introuvable - modifications non sauvegardées !' });
         }
 
         const errors = report.filter(r => r.status === 'error');
