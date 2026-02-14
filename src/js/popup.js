@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     fillBtn.addEventListener('click', async () => {
+        alert("Bouton cliqué !");
         const file = fileInput.files[0];
         if (!file) {
             alert('Veuillez sélectionner un fichier Markdown.');
@@ -39,12 +40,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const reader = new FileReader();
         reader.onload = async (e) => {
-            const text = e.target.result;
-            const data = parseMarkdown(text);
+            try {
+                // alert("Click reçu, début du traitement...");
+                const text = e.target.result;
+                const data = parseMarkdown(text);
 
-            // Send data to content script
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
+                // Send data to content script
+                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                sendMessageToContentScript(tab.id, { action: 'FILL_FORM', data });
+            } catch (err) {
+                alert("Erreur dans popup (parsing/envoi) : " + err.message);
+            }
         };
         reader.readAsText(file);
     });

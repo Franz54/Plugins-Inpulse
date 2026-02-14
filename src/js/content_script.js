@@ -1,4 +1,8 @@
+
+alert("Content Script chargé (v3 - diagnostic) !");
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // alert("Content Script a reçu le message : " + request.action);
     if (request.action === 'FILL_FORM') {
         fillInpulseForm(request.data);
         sendResponse({ status: "ok" }); // Ack
