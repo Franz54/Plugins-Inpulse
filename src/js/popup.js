@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     diagBtn.addEventListener('click', async () => {
+        alert("Envoi de la commande Diagnostic..."); // FEEDBACK VISUEL
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         sendMessageToContentScript(tab.id, { action: 'RUN_DIAGNOSTICS' });
     });
