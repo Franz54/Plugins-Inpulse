@@ -11,39 +11,55 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function fillInpulseForm(data) {
     console.log('Automating Inpulse Form with data:', data);
+    let report = [];
 
     // 1. Mission Tab
     if (data.mission) {
-        await fillMissionTab(data.mission);
+        report.push(...await fillMissionTab(data.mission));
     }
 
     // 2. Satisfaction Tab
     if (data.satisfaction) {
-        await fillSatisfactionTab(data.satisfaction);
+        report.push(...await fillSatisfactionTab(data.satisfaction));
     }
 
     // 3. Performance Tab (Strengths, Axes, Synthesis)
     if (data.performance) {
-        await fillPerformanceTab(data.performance);
+        report.push(...await fillPerformanceTab(data.performance));
     }
 
     // 4. Objectives Tabs (Past and Future)
     if (data.objectives) {
-        await fillObjectivesTabs(data.objectives);
+        report.push(...await fillObjectivesTabs(data.objectives));
     }
 
     // 5. Final Comments
     if (data.comments) {
-        await fillCommentsTab(data.comments);
+        report.push(...await fillCommentsTab(data.comments));
     }
 
-    alert('Remplissage automatique terminé. Veuillez vérifier les champs avant de valider.');
+    const errors = report.filter(r => r.status === 'error');
+    const success = report.filter(r => r.status === 'success');
+
+    let message = `Remplissage terminé !\n\n✅ Champs remplis : ${success.length}`;
+    if (errors.length > 0) {
+        message += `\n❌ Éléments introuvables (${errors.length}) :\n- ${errors.map(e => e.msg).join('\n- ')}`;
+    } else {
+        message += `\nTout semble correct.`;
+    }
+    alert(message);
 }
 
 async function fillMissionTab(mission) {
+    let logs = [];
     // Navigate to Mission tab if not selected
     const missionTab = findElementByText('button', 'Missions/Activités actuelles');
-    if (missionTab) missionTab.click();
+    if (missionTab) {
+        missionTab.click();
+        logs.push({ status: 'success', msg: 'Onglet Mission activé' });
+    } else {
+        logs.push({ status: 'error', msg: 'Onglet "Missions/Activités actuelles" introuvable' });
+    }
 
     // Click "Modifier" (crayon)
     const editBtn = document.querySelector('button svg[class*="Edit"]').parentElement;
@@ -53,32 +69,60 @@ async function fillMissionTab(mission) {
 
         // Fill context and activities in modal
         const contextField = findTextareaByLabel('Description du contexte');
-        if (contextField) setInputValue(contextField, mission.context || '');
+        if (contextField) {
+            setInputValue(contextField, mission.context || '');
+            logs.push({ status: 'success', msg: 'Champ "Description du contexte" rempli' });
+        } else {
+            logs.push({ status: 'error', msg: 'Champ "Description du contexte" introuvable' });
+        }
 
         // Note: activities mapping could be more specific based on MD subheaders
         const activitiesField = findTextareaByLabel('Activités et responsabilités');
         if (activitiesField) {
-            // Placeholder: concat for now, or use specific activities if parsed
             setInputValue(activitiesField, mission.activities || '');
+            logs.push({ status: 'success', msg: 'Champ "Activités et responsabilités" rempli' });
+        } else {
+            logs.push({ status: 'error', msg: 'Champ "Activités et responsabilités" introuvable' });
         }
 
         // Close/Validate modal
         const validateBtn = findElementByText('button', 'Valider');
         if (validateBtn) validateBtn.click();
         await wait(500);
+    } else {
+        logs.push({ status: 'error', msg: 'Bouton "Modifier" (crayon) introuvable sur l\'onglet Mission' });
     }
+    return logs;
 }
 
 async function fillSatisfactionTab(sat) {
+    let logs = [];
     const tab = findElementByText('button', 'Satisfaction');
-    if (tab) tab.click();
-    await wait(300);
+    if (tab) {
+        tab.click();
+        await wait(300);
+        logs.push({ status: 'success', msg: 'Onglet Satisfaction activé' });
+    } else {
+        logs.push({ status: 'error', msg: 'Onglet "Satisfaction" introuvable' });
+        return logs; // Cannot proceed
+    }
 
     const bilanField = findTextareaByLabel('Bilan général');
-    if (bilanField) setInputValue(bilanField, sat.bilan || '');
+    if (bilanField) {
+        setInputValue(bilanField, sat.bilan || '');
+        logs.push({ status: 'success', msg: 'Champ "Bilan général" rempli' });
+    } else {
+        logs.push({ status: 'error', msg: 'Champ "Bilan général" introuvable' });
+    }
 
     const orgField = findTextareaByLabel('Organisation du travail');
-    if (orgField) setInputValue(orgField, sat.organisation || '');
+    if (orgField) {
+        setInputValue(orgField, sat.organisation || '');
+        logs.push({ status: 'success', msg: 'Champ "Organisation du travail" rempli' });
+    } else {
+        logs.push({ status: 'error', msg: 'Champ "Organisation du travail" introuvable' });
+    }
+    return logs;
 }
 
 async function fillPerformanceTab(perf) {
@@ -148,9 +192,16 @@ async function fillObjectivesTabs(objectives) {
 }
 
 async function fillCommentsTab(comments) {
+    let logs = [];
     // This often depends on where the final comments are. Usually at step "Validation"
     const managerField = findTextareaByLabel('Commentaire final du manager');
-    if (managerField) setInputValue(managerField, comments.manager || '');
+    if (managerField) {
+        setInputValue(managerField, comments.manager || '');
+        logs.push({ status: 'success', msg: 'Commentaire Manager rempli' });
+    } else {
+        logs.push({ status: 'error', msg: 'Champ "Commentaire final du manager" introuvable' });
+    }
+    return logs;
 }
 
 // --- Helpers ---
