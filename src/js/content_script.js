@@ -1,3 +1,4 @@
+alert("Content Script chargé (v2 - diagnostic) !");
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     alert("Content Script a reçu le message : " + request.action);

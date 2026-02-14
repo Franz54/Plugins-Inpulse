@@ -196,6 +196,7 @@ async function sendMessageToContentScript(tabId, message) {
     try {
         await chrome.tabs.sendMessage(tabId, message);
     } catch (error) {
+        alert("Erreur catchée dans popup : " + error.message);
         // If message fails (likely receiving end does not exist), try injecting the script
         console.warn('Communication failed, attempting to inject content script...', error);
         try {
