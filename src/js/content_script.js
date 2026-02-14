@@ -47,7 +47,49 @@ function runDiagnostics() {
     });
 
     console.log(report);
-    alert(report);
+
+    // Create a modal to display the report
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;justify-content:center;align-items:center;';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white;padding:20px;width:80%;height:80%;border-radius:8px;display:flex;flex-direction:column;box-shadow:0 0 20px rgba(0,0,0,0.5);';
+
+    const title = document.createElement('h2');
+    title.innerText = 'Rapport Diagnostic (Copier-Coller)';
+    title.style.marginBottom = '10px';
+
+    const textarea = document.createElement('textarea');
+    textarea.value = report;
+    textarea.style.cssText = 'flex:1;width:100%;font-family:monospace;white-space:pre;overflow:auto;margin-bottom:10px;';
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.justifyContent = 'flex-end';
+    btnContainer.style.gap = '10px';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.innerText = 'Copier et Fermer';
+    copyBtn.style.cssText = 'padding:10px 20px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;';
+    copyBtn.onclick = () => {
+        textarea.select();
+        document.execCommand('copy');
+        alert('Copié dans le presse-papier !');
+        document.body.removeChild(overlay);
+    };
+
+    const closeBtn = document.createElement('button');
+    closeBtn.innerText = 'Fermer';
+    closeBtn.style.cssText = 'padding:10px 20px;background:#f44336;color:white;border:none;border-radius:4px;cursor:pointer;';
+    closeBtn.onclick = () => document.body.removeChild(overlay);
+
+    btnContainer.appendChild(closeBtn);
+    btnContainer.appendChild(copyBtn);
+    modal.appendChild(title);
+    modal.appendChild(textarea);
+    modal.appendChild(btnContainer);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
 }
 
 async function fillInpulseForm(data) {
