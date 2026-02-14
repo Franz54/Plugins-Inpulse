@@ -11,43 +11,51 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function fillInpulseForm(data) {
     console.log('Automating Inpulse Form with data:', data);
-    let report = [];
+    alert("Remplissage lancé..."); // Feedback immédiat
 
-    // 1. Mission Tab
-    if (data.mission) {
-        report.push(...await fillMissionTab(data.mission));
+    try {
+        let report = [];
+
+        // 1. Mission Tab
+        if (data.mission) {
+            report.push(...await fillMissionTab(data.mission));
+        }
+
+        // 2. Satisfaction Tab
+        if (data.satisfaction) {
+            report.push(...await fillSatisfactionTab(data.satisfaction));
+        }
+
+        // 3. Performance Tab (Strengths, Axes, Synthesis)
+        if (data.performance) {
+            report.push(...await fillPerformanceTab(data.performance));
+        }
+
+        // 4. Objectives Tabs (Past and Future)
+        if (data.objectives) {
+            report.push(...await fillObjectivesTabs(data.objectives));
+        }
+
+        // 5. Final Comments
+        if (data.comments) {
+            report.push(...await fillCommentsTab(data.comments));
+        }
+
+        const errors = report.filter(r => r.status === 'error');
+        const success = report.filter(r => r.status === 'success');
+
+        let message = `Remplissage terminé !\n\n✅ Champs remplis : ${success.length}`;
+        if (errors.length > 0) {
+            message += `\n❌ Éléments introuvables (${errors.length}) :\n- ${errors.map(e => e.msg).join('\n- ')}`;
+        } else {
+            message += `\nTout semble correct.`;
+        }
+        alert(message);
+
+    } catch (e) {
+        console.error("Erreur fatale content_script:", e);
+        alert("❌ Erreur critique pendant le remplissage :\n" + e.message + "\n\n" + e.stack);
     }
-
-    // 2. Satisfaction Tab
-    if (data.satisfaction) {
-        report.push(...await fillSatisfactionTab(data.satisfaction));
-    }
-
-    // 3. Performance Tab (Strengths, Axes, Synthesis)
-    if (data.performance) {
-        report.push(...await fillPerformanceTab(data.performance));
-    }
-
-    // 4. Objectives Tabs (Past and Future)
-    if (data.objectives) {
-        report.push(...await fillObjectivesTabs(data.objectives));
-    }
-
-    // 5. Final Comments
-    if (data.comments) {
-        report.push(...await fillCommentsTab(data.comments));
-    }
-
-    const errors = report.filter(r => r.status === 'error');
-    const success = report.filter(r => r.status === 'success');
-
-    let message = `Remplissage terminé !\n\n✅ Champs remplis : ${success.length}`;
-    if (errors.length > 0) {
-        message += `\n❌ Éléments introuvables (${errors.length}) :\n- ${errors.map(e => e.msg).join('\n- ')}`;
-    } else {
-        message += `\nTout semble correct.`;
-    }
-    alert(message);
 }
 
 async function fillMissionTab(mission) {
