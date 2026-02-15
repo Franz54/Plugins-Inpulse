@@ -304,41 +304,43 @@ async function fillPerformanceTab(perf) {
             addBtn.click();
             await wait(500);
 
-            // Modal: Type (Point fort / Axe de progrès)
-            const typeDropdown = findDropdownByLabel('Type');
+            // Modal: Type (Point fort / Axe de progrès) - USE MODAL-SCOPED HELPERS
+            const typeDropdown = findDropdownByLabelInModal('Type');
             console.log('DEBUG: typeDropdown found:', typeDropdown, 'value to set:', mappedType);
             if (typeDropdown) {
                 await selectDropdownOption(typeDropdown, mappedType);
             } else {
-                logs.push({ status: 'error', msg: 'Dropdown "Type" introuvable' });
+                logs.push({ status: 'error', msg: 'Dropdown "Type" introuvable dans la modale' });
             }
 
             // Wait for Thématique to be enabled
             await wait(400);
 
-            const themeDropdown = findDropdownByLabel('Thématique');
+            const themeDropdown = findDropdownByLabelInModal('Thématique');
             console.log('DEBUG: themeDropdown found:', themeDropdown, 'value to set:', mappedTheme);
             if (themeDropdown) {
                 await selectDropdownOption(themeDropdown, mappedTheme);
             } else {
-                logs.push({ status: 'error', msg: 'Dropdown "Thématique" introuvable' });
+                logs.push({ status: 'error', msg: 'Dropdown "Thématique" introuvable dans la modale' });
             }
 
-            const descField = findTextareaByLabel('Descriptif');
+            const descField = findTextareaByLabelInModal('Descriptif');
+            console.log('DEBUG: descField found:', descField);
             if (descField) {
                 setInputValue(descField, item.description);
+                logs.push({ status: 'success', msg: 'Champ "Descriptif" rempli' });
             } else {
-                logs.push({ status: 'error', msg: 'Champ "Descriptif" introuvable' });
+                logs.push({ status: 'error', msg: 'Champ "Descriptif" introuvable dans la modale' });
             }
 
-            const validateBtn = findElementByText('button', 'Valider');
+            const validateBtn = findElementInModal('button', 'Valider');
             if (validateBtn) {
                 validateBtn.click();
                 logs.push({ status: 'success', msg: `Ajouté : ${mappedType} - ${mappedTheme}` });
             } else {
-                logs.push({ status: 'error', msg: 'Bouton "Valider" introuvable' });
+                logs.push({ status: 'error', msg: 'Bouton "Valider" introuvable dans la modale' });
             }
-            await wait(300);
+            await wait(500); // Wait for modal to close
         } else {
             logs.push({ status: 'error', msg: 'Bouton "Ajouter un axe..." introuvable' });
         }
@@ -407,8 +409,70 @@ async function fillCommentsTab(comments) {
 
 // --- Helpers ---
 
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function findElementByText(tag, text) {
     return Array.from(document.querySelectorAll(tag)).find(el => el.textContent.includes(text));
+}
+
+// MODAL-SCOPED HELPERS (to avoid conflicts with background page elements)
+function findElementInModal(tag, text) {
+    const modal = document.querySelector('[role="dialog"]');
+    if (!modal) return null;
+    return Array.from(modal.querySelectorAll(tag)).find(el => el.textContent.includes(text));
+}
+
+function findTextareaByLabelInModal(labelText) {
+    const modal = document.querySelector('[role="dialog"]');
+    if (!modal) return null;
+
+    const labels = Array.from(modal.querySelectorAll('label'));
+    const label = labels.find(l => l.textContent.includes(labelText));
+    if (label) {
+        const id = label.getAttribute('for');
+        if (id) {
+            const textarea = modal.querySelector(`#${id}`);
+            if (textarea) return textarea;
+        }
+        return label.parentElement.querySelector('textarea') || label.nextElementSibling?.querySelector('textarea');
+    }
+    return null;
+}
+
+function findInputByLabelInModal(labelText) {
+    const modal = document.querySelector('[role="dialog"]');
+    if (!modal) return null;
+
+    const labels = Array.from(modal.querySelectorAll('label'));
+    const label = labels.find(l => l.textContent.includes(labelText));
+    if (label) {
+        const id = label.getAttribute('for');
+        if (id) {
+            const input = modal.querySelector(`#${id}`);
+            if (input) return input;
+        }
+        return label.parentElement.querySelector('input') || label.nextElementSibling?.querySelector('input');
+    }
+    return null;
+}
+
+function findDropdownByLabelInModal(labelText) {
+    const modal = document.querySelector('[role="dialog"]');
+    if (!modal) return null;
+
+    const labels = Array.from(modal.querySelectorAll('label'));
+    const label = labels.find(l => l.textContent.includes(labelText));
+    if (label) {
+        const id = label.getAttribute('for');
+        if (id) {
+            const select = modal.querySelector(`#${id}`);
+            if (select) return select;
+        }
+        return label.parentElement.querySelector('select') || label.nextElementSibling?.querySelector('select');
+    }
+    return null;
 }
 
 function findTextareaByLabel(labelText) {
