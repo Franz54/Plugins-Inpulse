@@ -466,11 +466,30 @@ async function selectDropdownOption(dropdown, optionText) {
 
         if (targetOption) {
             console.log('DEBUG: Found target option:', targetOption.text, 'value:', targetOption.value);
+
+            // Focus the dropdown first
+            dropdown.focus();
+            await wait(100);
+
+            // Set the value
             dropdown.value = targetOption.value;
-            // Trigger events to notify React/framework
-            dropdown.dispatchEvent(new Event('change', { bubbles: true }));
-            dropdown.dispatchEvent(new Event('input', { bubbles: true }));
+
+            // Trigger ALL possible events that React might listen to
+            const events = [
+                new Event('input', { bubbles: true, cancelable: true }),
+                new Event('change', { bubbles: true, cancelable: true }),
+                new Event('blur', { bubbles: true, cancelable: true }),
+                new MouseEvent('click', { bubbles: true, cancelable: true })
+            ];
+
+            for (const event of events) {
+                dropdown.dispatchEvent(event);
+            }
+
+            // Blur to finalize
             dropdown.blur();
+
+            console.log('DEBUG: Successfully set dropdown to:', dropdown.value);
             await wait(300);
         } else {
             console.log('DEBUG: Target option NOT found for:', optionText);
