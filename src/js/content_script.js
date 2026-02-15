@@ -418,14 +418,27 @@ function findElementByText(tag, text) {
 }
 
 // MODAL-SCOPED HELPERS (to avoid conflicts with background page elements)
+function getModal() {
+    // The modal doesn't have role="dialog", so we find it by its heading
+    const modalHeading = Array.from(document.querySelectorAll('h2')).find(h =>
+        h.textContent.includes('Ajouter un axe de progrès') ||
+        h.textContent.includes('Modifier un axe de progrès')
+    );
+    if (modalHeading) {
+        // Navigate up to find the modal container
+        return modalHeading.closest('div').parentElement.parentElement;
+    }
+    return null;
+}
+
 function findElementInModal(tag, text) {
-    const modal = document.querySelector('[role="dialog"]');
+    const modal = getModal();
     if (!modal) return null;
     return Array.from(modal.querySelectorAll(tag)).find(el => el.textContent.includes(text));
 }
 
 function findTextareaByLabelInModal(labelText) {
-    const modal = document.querySelector('[role="dialog"]');
+    const modal = getModal();
     if (!modal) return null;
 
     const labels = Array.from(modal.querySelectorAll('label'));
@@ -442,7 +455,7 @@ function findTextareaByLabelInModal(labelText) {
 }
 
 function findInputByLabelInModal(labelText) {
-    const modal = document.querySelector('[role="dialog"]');
+    const modal = getModal();
     if (!modal) return null;
 
     const labels = Array.from(modal.querySelectorAll('label'));
@@ -459,8 +472,11 @@ function findInputByLabelInModal(labelText) {
 }
 
 function findDropdownByLabelInModal(labelText) {
-    const modal = document.querySelector('[role="dialog"]');
-    if (!modal) return null;
+    const modal = getModal();
+    if (!modal) {
+        console.log('DEBUG: Modal not found!');
+        return null;
+    }
 
     const labels = Array.from(modal.querySelectorAll('label'));
     const label = labels.find(l => l.textContent.includes(labelText));
