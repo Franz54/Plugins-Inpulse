@@ -257,7 +257,9 @@ async function fillPerformanceTab(perf) {
     }
 
     // Handle Strengths and Axes Modal
+    console.log('DEBUG: strengthsAndAxes data:', perf.strengthsAndAxes);
     for (const item of perf.strengthsAndAxes) {
+        console.log('DEBUG: Processing item:', item);
         const addBtn = findElementByText('button', 'Ajouter un axe de progrès/point fort');
         if (addBtn) {
             addBtn.click();
@@ -265,22 +267,36 @@ async function fillPerformanceTab(perf) {
 
             // Modal: Type (Point fort / Axe de progrès)
             const typeDropdown = findDropdownByLabel('Type');
+            console.log('DEBUG: typeDropdown found:', typeDropdown, 'value to set:', item.type);
             if (typeDropdown) {
                 await selectDropdownOption(typeDropdown, item.type);
+            } else {
+                logs.push({ status: 'error', msg: 'Dropdown "Type" introuvable' });
             }
 
             const themeDropdown = findDropdownByLabel('Thématique');
+            console.log('DEBUG: themeDropdown found:', themeDropdown, 'value to set:', item.theme);
             if (themeDropdown) {
                 await selectDropdownOption(themeDropdown, item.theme);
+            } else {
+                logs.push({ status: 'error', msg: 'Dropdown "Thématique" introuvable' });
             }
 
             const descField = findTextareaByLabel('Descriptif');
-            if (descField) setInputValue(descField, item.description);
+            if (descField) {
+                setInputValue(descField, item.description);
+            } else {
+                logs.push({ status: 'error', msg: 'Champ "Descriptif" introuvable' });
+            }
 
             const validateBtn = findElementByText('button', 'Valider');
-            if (validateBtn) validateBtn.click();
+            if (validateBtn) {
+                validateBtn.click();
+                logs.push({ status: 'success', msg: `Ajouté : ${item.type} - ${item.theme}` });
+            } else {
+                logs.push({ status: 'error', msg: 'Bouton "Valider" introuvable' });
+            }
             await wait(300);
-            logs.push({ status: 'success', msg: `Ajouté : ${item.type} - ${item.theme}` });
         } else {
             logs.push({ status: 'error', msg: 'Bouton "Ajouter un axe..." introuvable' });
         }
@@ -393,23 +409,33 @@ function findDropdownByLabel(labelText) {
 }
 
 async function selectDropdownOption(dropdown, optionText) {
-    if (!dropdown) return;
+    if (!dropdown) {
+        console.log('DEBUG: dropdown is null/undefined');
+        return;
+    }
+
+    console.log('DEBUG: selectDropdownOption called with:', dropdown.tagName, 'optionText:', optionText);
 
     // For native <select> elements
     if (dropdown.tagName === 'SELECT') {
         const options = Array.from(dropdown.options);
+        console.log('DEBUG: Available options:', options.map(o => o.text));
         const targetOption = options.find(opt => opt.text.includes(optionText) || opt.value.includes(optionText));
 
         if (targetOption) {
+            console.log('DEBUG: Found target option:', targetOption.text, 'value:', targetOption.value);
             dropdown.value = targetOption.value;
             // Trigger events to notify React/framework
             dropdown.dispatchEvent(new Event('change', { bubbles: true }));
             dropdown.dispatchEvent(new Event('input', { bubbles: true }));
             dropdown.blur();
             await wait(300);
+        } else {
+            console.log('DEBUG: Target option NOT found for:', optionText);
         }
     } else {
         // Fallback for custom dropdowns (original logic)
+        console.log('DEBUG: Using fallback for custom dropdown');
         dropdown.click();
         await wait(200);
         const option = findElementByText('div, li, span, option', optionText);
