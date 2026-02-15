@@ -380,16 +380,41 @@ function findDropdownByLabel(labelText) {
     const labels = Array.from(document.querySelectorAll('label'));
     const label = labels.find(l => l.textContent.includes(labelText));
     if (label) {
-        return label.parentElement.querySelector('[class*="dropdown"], [class*="select"]');
+        // Try to find select by 'for' attribute
+        const id = label.getAttribute('for');
+        if (id) {
+            const select = document.getElementById(id);
+            if (select) return select;
+        }
+        // Fallback: look for select in parent or next sibling
+        return label.parentElement.querySelector('select') || label.nextElementSibling?.querySelector('select');
     }
     return null;
 }
 
 async function selectDropdownOption(dropdown, optionText) {
-    dropdown.click();
-    await wait(200);
-    const option = findElementByText('div, li, span', optionText);
-    if (option) option.click();
+    if (!dropdown) return;
+
+    // For native <select> elements
+    if (dropdown.tagName === 'SELECT') {
+        const options = Array.from(dropdown.options);
+        const targetOption = options.find(opt => opt.text.includes(optionText) || opt.value.includes(optionText));
+
+        if (targetOption) {
+            dropdown.value = targetOption.value;
+            // Trigger events to notify React/framework
+            dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+            dropdown.dispatchEvent(new Event('input', { bubbles: true }));
+            dropdown.blur();
+            await wait(300);
+        }
+    } else {
+        // Fallback for custom dropdowns (original logic)
+        dropdown.click();
+        await wait(200);
+        const option = findElementByText('div, li, span, option', optionText);
+        if (option) option.click();
+    }
 }
 
 function setInputValue(el, value) {
