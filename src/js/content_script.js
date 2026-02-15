@@ -151,6 +151,40 @@ async function fillInpulseForm(data) {
     }
 }
 
+// ========== MAPPING FUNCTIONS ==========
+// Map Markdown values to exact Inpulse dropdown options
+
+function mapThematique(mdValue) {
+    const mapping = {
+        'comportement': 'Aptitude comportementale',
+        'aptitude comportementale': 'Aptitude comportementale',
+        'technique': 'Technique',
+        'métier': 'Métier',
+        'metier': 'Métier',
+        'développement pro': 'Aptitude comportementale', // Fallback
+        'developpement pro': 'Aptitude comportementale'  // Fallback
+    };
+
+    const normalized = mdValue.toLowerCase().trim();
+    const mapped = mapping[normalized];
+
+    if (!mapped) {
+        console.warn(`Thématique "${mdValue}" non reconnue, utilisation de "Aptitude comportementale" par défaut`);
+        return 'Aptitude comportementale';
+    }
+
+    return mapped;
+}
+
+function mapType(mdValue) {
+    const normalized = mdValue.toLowerCase().trim();
+    if (normalized.includes('point fort')) return 'Point fort';
+    if (normalized.includes('axe')) return 'Axe de progrès';
+    return mdValue; // Return as-is if no match
+}
+
+// ========== TAB FILLING FUNCTIONS ==========
+
 async function fillMissionTab(mission) {
     let logs = [];
     // Navigate to Mission tab if not selected
@@ -259,7 +293,12 @@ async function fillPerformanceTab(perf) {
     // Handle Strengths and Axes Modal
     console.log('DEBUG: strengthsAndAxes data:', perf.strengthsAndAxes);
     for (const item of perf.strengthsAndAxes) {
-        console.log('DEBUG: Processing item:', item);
+        // Map Markdown values to Inpulse values
+        const mappedType = mapType(item.type);
+        const mappedTheme = mapThematique(item.theme);
+
+        console.log(`DEBUG: Mapping "${item.type}" -> "${mappedType}", "${item.theme}" -> "${mappedTheme}"`);
+
         const addBtn = findElementByText('button', 'Ajouter un axe de progrès/point fort');
         if (addBtn) {
             addBtn.click();
@@ -267,17 +306,20 @@ async function fillPerformanceTab(perf) {
 
             // Modal: Type (Point fort / Axe de progrès)
             const typeDropdown = findDropdownByLabel('Type');
-            console.log('DEBUG: typeDropdown found:', typeDropdown, 'value to set:', item.type);
+            console.log('DEBUG: typeDropdown found:', typeDropdown, 'value to set:', mappedType);
             if (typeDropdown) {
-                await selectDropdownOption(typeDropdown, item.type);
+                await selectDropdownOption(typeDropdown, mappedType);
             } else {
                 logs.push({ status: 'error', msg: 'Dropdown "Type" introuvable' });
             }
 
+            // Wait for Thématique to be enabled
+            await wait(400);
+
             const themeDropdown = findDropdownByLabel('Thématique');
-            console.log('DEBUG: themeDropdown found:', themeDropdown, 'value to set:', item.theme);
+            console.log('DEBUG: themeDropdown found:', themeDropdown, 'value to set:', mappedTheme);
             if (themeDropdown) {
-                await selectDropdownOption(themeDropdown, item.theme);
+                await selectDropdownOption(themeDropdown, mappedTheme);
             } else {
                 logs.push({ status: 'error', msg: 'Dropdown "Thématique" introuvable' });
             }
@@ -292,7 +334,7 @@ async function fillPerformanceTab(perf) {
             const validateBtn = findElementByText('button', 'Valider');
             if (validateBtn) {
                 validateBtn.click();
-                logs.push({ status: 'success', msg: `Ajouté : ${item.type} - ${item.theme}` });
+                logs.push({ status: 'success', msg: `Ajouté : ${mappedType} - ${mappedTheme}` });
             } else {
                 logs.push({ status: 'error', msg: 'Bouton "Valider" introuvable' });
             }
